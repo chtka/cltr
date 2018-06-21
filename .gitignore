@@ -1,3 +1,4 @@
 searchers/__pycache__/
 search_term_list.txt
 geckodriver.log
+.pylintrc
