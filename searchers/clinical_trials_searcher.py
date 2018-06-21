@@ -48,7 +48,7 @@ class ClinicalTrialsSearcher(Searcher):
             # get all desired data
             ct_id = root.find('id_info').find('nct_id').text
             title = root.find('official_title').text if root.find('official_title') is not None else root.find('brief_title').text if root.find('brief_title') is not None else None
-            status = root.find('overall_status').text
+            status = root.find('overall_status').text if root.find('overall_status') is not None else None
             overall_official = root.find('overall_official')
             if overall_official:
                 principal_investigator = overall_official.find('last_name').text
