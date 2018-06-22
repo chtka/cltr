@@ -32,8 +32,17 @@ class ClinicalTrialsSearcher(Searcher):
         archive = zipfile.ZipFile(self.SEARCH_RESULTS_ZIP_FILE_NAME, 'r')
         
         # initaizlize DataFrame for holding the extracted data
-        df = pd.DataFrame(columns=['ct_id', 'title', 'status', 'principal_investigator', 'lead_sponsor', 'collaborators', 
-                           'estimated_completion_date'])
+        df = pd.DataFrame(columns=
+            [
+                'ct_id', 
+                'title', 
+                'status', 
+                'principal_investigator', 
+                'lead_sponsor', 
+                'collaborators', 
+                'estimated_completion_date'
+            ]
+        )
         
         # iterating through all files in the archive, we extract the wanted data
         for filename in archive.namelist():
@@ -74,9 +83,16 @@ class ClinicalTrialsSearcher(Searcher):
             estimated_completion_date = root.find('primary_completion_date').text if root.find('primary_completion_date') is not None else None
 
             # create row for insertion
-            row = pd.Series({"ct_id": ct_id, "title": title, "status": status, "principal_investigator": principal_investigator,
-                         "number_of_sites": number_of_sites, "lead_sponsor": lead_sponsor, "collaborators": collaborators,
-                         "estimated_completion_date": estimated_completion_date})
+            row = pd.Series({
+                "ct_id": ct_id, 
+                "title": title, 
+                "status": status, 
+                "principal_investigator": principal_investigator,
+                "number_of_sites": number_of_sites, 
+                "lead_sponsor": lead_sponsor, 
+                "collaborators": collaborators,
+                "estimated_completion_date": estimated_completion_date
+            })
 
             # insert row into DataFrame
             df = df.append(row, ignore_index=True)

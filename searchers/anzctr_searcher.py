@@ -17,7 +17,8 @@ class ANZCTRSearcher(Searcher):
     
     def search_and_load_df(self, search_term):
         
-        SEARCH_RESULTS_ZIP_FILE_GLOB_PATTERN = path.join(os.getcwd(), 'TrialDetails*')
+        SEARCH_RESULTS_ZIP_FILE_GLOB_PATTERN = path.join(os.getcwd(),
+            'TrialDetails*')
         
         # delete all old zip archives if they exist
         matching_files = glob(SEARCH_RESULTS_ZIP_FILE_GLOB_PATTERN)
@@ -27,7 +28,10 @@ class ANZCTRSearcher(Searcher):
         
         
         # perform search and download zip archive of all matching studies
-        self.browser.get(self.ANZCTR_BASE_URL + urlencode({"searchTxt": search_term, "isBasic": "True"}))
+        self.browser.get(self.ANZCTR_BASE_URL + urlencode({
+            "searchTxt": search_term, 
+            "isBasic": "True"
+        }))
         self.browser.find_element_by_id('ctl00_body_btnDownload').click()
         
         archive_name = ""
@@ -35,7 +39,9 @@ class ANZCTRSearcher(Searcher):
         # wait for the zip archive to download
         while True:
             matching_files = glob(SEARCH_RESULTS_ZIP_FILE_GLOB_PATTERN)
-            if len(matching_files) != 0 and zipfile.is_zipfile(matching_files[0]):
+            if len(matching_files) != 0 and 
+                zipfile.is_zipfile(matching_files[0]):
+
                 archive_name = matching_files[0]
                 break
             sleep(.1)
@@ -44,11 +50,20 @@ class ANZCTRSearcher(Searcher):
         archive = zipfile.ZipFile(archive_name, 'r')
         
         # initialize DataFrame for holding the extracted data
-        df = pd.DataFrame(columns=['ct_id', 'title', 'status', 'principal_investigator', 'number_of_sites', 'lead_sponsor', 'collaborators', 
-                           'estimated_completion_date'])
+        df = pd.DataFrame(columns=[
+            'ct_id', 
+            'title', 
+            'status', 
+            'principal_investigator', 
+            'number_of_sites', 
+            'lead_sponsor', 
+            'collaborators', 
+            'estimated_completion_date'
+        ])
         
         # iterating through all files in the archive, we extract the wanted data
-        for filename in [name for name in archive.namelist() if name.endswith('.xml')]:
+        for filename in [name for name in archive.namelist() 
+            if name.endswith('.xml')]:
             
             # open and read file contents into string
             file = archive.open(filename)
@@ -76,8 +91,12 @@ class ANZCTRSearcher(Searcher):
             status = root.xpath('./stage/text()')[0]
             
             # principal_investigator
-            principal_investigator = root.xpath('.//type[text()="Principal Investigator"]/../name/text()')[0] if\
-                len(root.xpath('.//type[text()="Principal Investigator"]/../name/text()')) != 0 else ""
+            principal_investigator = root\
+                .xpath(
+                    './/type[text()="Principal Investigator"]/../name/text()'
+                )[0] if len(root.xpath(
+                    './/type[text()="Principal Investigator"]/../name/text()'
+                )) != 0 else ""
             
             # number_of_sites
             number_of_sites = 0
@@ -92,9 +111,16 @@ class ANZCTRSearcher(Searcher):
             # estimated_completion_date - ANZCTR does not provide completion dates, only submission and approval dates
             estimated_completion_date = "Unknown"
             
-            row = pd.Series({"ct_id": ct_id, "title": title, "status": status, "principal_investigator": principal_investigator,
-                "number_of_sites": number_of_sites, "lead_sponsor": lead_sponsor, "collaborators": collaborators,
-                "estimated_completion_date": estimated_completion_date})
+            row = pd.Series({
+                "ct_id": ct_id, 
+                "title": title, 
+                "status": status, 
+                "principal_investigator": principal_investigator,
+                "number_of_sites": number_of_sites, 
+                "lead_sponsor": lead_sponsor, 
+                "collaborators": collaborators,
+                "estimated_completion_date": estimated_completion_date
+            })
             
             # insert row into DataFrame
             df = df.append(row, ignore_index=True)
