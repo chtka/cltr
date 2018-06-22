@@ -3,6 +3,7 @@ import time
 timestr = time.strftime("%Y%m%d-%H%M%S")
 
 from searchers.clinical_trials_searcher import ClinicalTrialsSearcher
+from searchers.anzctr_searcher import ANZCTRSearcher
 
 file_path = sys.argv[1]
 
@@ -16,7 +17,7 @@ with open(file_path) as f:
 
     term = term.rstrip()
 
-    
+
 
     
 

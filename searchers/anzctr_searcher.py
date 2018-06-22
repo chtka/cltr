@@ -25,6 +25,7 @@ class ANZCTRSearcher(Searcher):
             for matching_file in matching_files:
                 os.remove(matching_file)
         
+        
         # perform search and download zip archive of all matching studies
         self.browser.get(self.ANZCTR_BASE_URL + urlencode({"searchTxt": search_term, "isBasic": "True"}))
         self.browser.find_element_by_id('ctl00_body_btnDownload').click()
