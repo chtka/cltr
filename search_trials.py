@@ -40,16 +40,44 @@ if __name__ == "__main__":
 
             terms.append(term.rstrip())
 
-    with ANZCTRSearcher() as anzsearcher:
+    # with ANZCTRSearcher() as anzsearcher:
+
+    #     for term in terms:
+
+    #         anzctr_filepath = anzsearcher.search_and_download_raw(term)
+    #         print(anzctr_filepath)
+    #         if anzctr_filepath:
+    #             anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", term, d.year, d.month, d.day, anzctr_filepath)
+    #             bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
+    #             os.remove(os.path.join(os.getcwd(), anzctr_filepath))
+
+    # with ISRCTNSearcher() as isrsearcher:
+
+    #     for term in terms:
+
+    #         isrctn_filepath = isrsearcher.search_and_download_raw(term)
+
+    #         print(isrctn_filepath)
+
+    #         if isrctn_filepath:
+    #             isrctn_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ISRCTN", term, d.year, d.month, d.day, isrctn_filepath)
+    #             bucket.upload_file(os.path.join(os.getcwd(), isrctn_filepath), isrctn_filepath_s3)
+    #             os.remove(os.path.join(os.getcwd(), isrctn_filepath))
+
+    with ClinicalTrialsSearcher() as cltrsearcher:
 
         for term in terms:
 
-            anzctr_filepath = anzsearcher.search_and_download_raw(term)
-            print(anzctr_filepath)
-            if anzctr_filepath:
-                anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", term, d.year, d.month, d.day, anzctr_filepath)
-                bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
-                os.remove(os.path.join(os.getcwd(), anzctr_filepath))
+            cltr_filepath = cltrsearcher.search_and_download_raw(term)
+
+            print(cltr_filepath)
+
+            if cltr_filepath:
+                cltr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("CLINICAL_TRIALS_GOV", term, d.year, d.month, d.day, cltr_filepath)
+                bucket.upload_file(os.path.join(os.getcwd(), cltr_filepath), cltr_filepath_s3)
+                os.remove(os.path.join(os.getcwd(), cltr_filepath))    
+
+    
 
         # anzctr_filepath = anzsearcher.search_and_download_raw("cpap")
         # anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", "cpap", d.year, d.month, d.day, anzctr_filepath)

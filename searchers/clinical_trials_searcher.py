@@ -16,7 +16,7 @@ class ClinicalTrialsSearcher(Searcher):
     CLINICAL_TRIALS_BASE_URL = "https://clinicaltrials.gov/ct2/results?"
     SEARCH_RESULTS_ZIP_FILE_NAME = "search_result.zip"
     
-    def search_and_load_df(self, search_term):
+    def search_and_download_raw(self, search_term):
         
         # delete old file if it exists
         if path.exists(self.SEARCH_RESULTS_ZIP_FILE_NAME):
