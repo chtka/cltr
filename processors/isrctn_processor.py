@@ -3,7 +3,21 @@ import pandas as pd
 from processors.processor import Processor
 
 class ISRCTNProcessor(Processor):
+    """ 
+    Processes the zip archives downloaded from the ISRCTN results
+    pages. 
+    """
+
     def process_and_load_df(self, filepath_or_buffer):
+        """
+        Processes the parquet file; returns a pandas DataFrame containing the
+        processed data.
+
+        Args:
+            filepath_or_buffer: Path to the parquet file to be processed, or
+                a buffer containing the parquet file to be processed in
+                memory.
+        """
 
         # utility function for converting the downloaded CSV data
         def strip_str_list_els(els):
@@ -27,6 +41,7 @@ class ISRCTNProcessor(Processor):
             .apply(strip_str_list_els).apply(set) 
                 - df['lead_sponsor'].apply(lambda s: {s})).apply(list)
 
+        # extract the desired columns
         df = df[[
             'ct_id', 
             'title', 

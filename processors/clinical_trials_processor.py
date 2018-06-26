@@ -6,7 +6,21 @@ import zipfile
 from processors.processor import Processor
 
 class ClinicalTrialsProcessor(Processor):
+    """ 
+    Processes the zip archives downloaded from the ClinicalTrials.gov results
+    pages. 
+    """
+
     def process_and_load_df(self, filepath_or_buffer):
+        """
+        Processes the zip archive; returns a pandas DataFrame containing the
+        processed data.
+
+        Args:
+            filepath_or_buffer: Path to the zip archive to be processed, or
+                a buffer containing the zip archive to be processed in
+                memory.
+        """
 
         # open the zip archive
         archive = zipfile.ZipFile(filepath_or_buffer, 'r')
