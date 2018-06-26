@@ -17,24 +17,28 @@ if __name__ == "__main__":
     bucket = s3.Bucket(CLINICAL_TRIALS_DATA_BUCKET_NAME)
 
     # ctsearcher = ClinicalTrialsSearcher()
-    anzsearcher = ANZCTRSearcher()
     # isrsearcher = ISRCTNSearcher()
 
     # isrctn_filepath = isrsearcher.search_and_download_raw("resmed")
-    anzctr_filepath = anzsearcher.search_and_download_raw("resmed")
 
-    anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", "resmed", d.year, d.month, d.day, anzctr_filepath)
-    anzsearcher.close_browser()
+    with ANZCTRSearcher() as anzsearcher:
+        anzctr_filepath = anzsearcher.search_and_download_raw("resmed")
+        anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", "resmed", d.year, d.month, d.day, anzctr_filepath)
+        bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
+        os.remove(os.path.join(os.getcwd(), anzctr_filepath))
+
+        anzctr_filepath = anzsearcher.search_and_download_raw("cpap")
+        anzctr_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ANZCTR", "cpap", d.year, d.month, d.day, anzctr_filepath)
+        bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
+        os.remove(os.path.join(os.getcwd(), anzctr_filepath))
 
 
 
     # isrctn_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ISRCTN", "resmed", d.year, d.month, d.day, isrctn_filepath)
 
     # bucket.upload_file(os.path.join(os.getcwd(), isrctn_filepath), isrctn_filepath_s3)
-    bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
 
     # os.remove(os.path.join(os.getcwd(), isrctn_filepath))
-    os.remove(os.path.join(os.getcwd(), anzctr_filepath))
 
     # isrsearcher.close_browser()
     # ctsearcher.close_browser()

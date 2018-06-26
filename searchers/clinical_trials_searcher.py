@@ -22,6 +22,7 @@ class ClinicalTrialsSearcher(Searcher):
         # perform search and download zip archive of all matching studies
         self.browser.get(self.CLINICAL_TRIALS_BASE_URL + urlencode({"term": search_term}))
         self.browser.find_element_by_id('downloadAdvancedForm').submit()
+        self.browser.close()
         
         # wait for the zip archive to download; for some reason there has to be a delay, else the zip file will not finish
         # downloading correctly...

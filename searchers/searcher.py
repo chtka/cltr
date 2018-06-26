@@ -13,6 +13,12 @@ class Searcher():
 
         self.browser = webdriver.Firefox(firefox_profile=self.fp)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close_browser()
+
     def search_and_download_raw(self, search_term):
         raise NotImplementedError("Searchers must implement this method.")
 
