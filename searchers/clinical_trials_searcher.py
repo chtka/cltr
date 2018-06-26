@@ -6,7 +6,10 @@ from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
 import zipfile
 
+from selenium.common.exceptions import NoSuchElementException
+
 from searchers.searcher import Searcher
+
 
 class ClinicalTrialsSearcher(Searcher):
     
@@ -21,17 +24,20 @@ class ClinicalTrialsSearcher(Searcher):
         
         # perform search and download zip archive of all matching studies
         self.browser.get(self.CLINICAL_TRIALS_BASE_URL + urlencode({"term": search_term}))
-        self.browser.find_element_by_id('downloadAdvancedForm').submit()
-        self.browser.close()
-        
-        # wait for the zip archive to download; for some reason there has to be a delay, else the zip file will not finish
-        # downloading correctly...
-        while (not path.exists(self.SEARCH_RESULTS_ZIP_FILE_NAME)) or (not zipfile.is_zipfile(self.SEARCH_RESULTS_ZIP_FILE_NAME)):
-            sleep(.1)
 
-        os.rename(self.SEARCH_RESULTS_ZIP_FILE_NAME, "clinical_trials_gov_results_%s.zip" % search_term)
+        try:
+            self.browser.find_element_by_id('downloadAdvancedForm').submit()
+            
+            # wait for the zip archive to download; for some reason there has to be a delay, else the zip file will not finish
+            # downloading correctly...
+            while (not path.exists(self.SEARCH_RESULTS_ZIP_FILE_NAME)) or (not zipfile.is_zipfile(self.SEARCH_RESULTS_ZIP_FILE_NAME)):
+                sleep(.1)
 
-        return "clinical_trials_gov_results_%s.zip" % search_term
+            os.rename(self.SEARCH_RESULTS_ZIP_FILE_NAME, "clinical_trials_gov_results_%s.zip" % search_term)
+
+            return "clinical_trials_gov_results_%s.zip" % search_term
+        except NoSuchElementException:
+            return None
         
         
         # # open the zip archive
