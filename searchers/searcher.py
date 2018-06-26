@@ -12,3 +12,9 @@ class Searcher():
         self.fp.set_preference("browser.helperApps.neverAsk.saveToDisk", content_types.ALL_CONTENT_TYPES)
 
         self.browser = webdriver.Firefox(firefox_profile=self.fp)
+
+    def search_and_download_raw(self, search_term):
+        raise NotImplementedError("Searchers must implement this method.")
+
+    def close_browser(self):
+        self.browser.close()

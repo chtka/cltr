@@ -18,23 +18,21 @@ class ISRCTNSearcher(Searcher):
     ISRCTN_SEARCH_URL = "http://www.isrctn.com/search?"
     ISRCTN_BASE_URL = "http://www.isrctn.com/"
     
-    def search_and_load_df(self, searchTerm):
+    def search_and_download_raw(self, search_term, format="parquet"):
         
-        # utility function for converting the downloaded CSV data
-        def strip_str_list_els(els):
-            return list(map(str.strip, els))
+
         
         # download file path changes dynamically based on search term, so we 
         # cannot pre-define it
-        RESULTS_CSV_FILE_NAME = 'ISRCTN search results for %s.csv' 
-            % searchTerm
+        RESULTS_CSV_FILE_NAME = 'ISRCTN search results for %s.csv'\
+            % search_term
         
         # delete old file if it exists
         if path.exists(RESULTS_CSV_FILE_NAME):
             os.remove(RESULTS_CSV_FILE_NAME)
             
         # perform search and download csv file of all matching studies
-        self.browser.get(self.ISRCTN_SEARCH_URL + urlencode({"q": searchTerm}))
+        self.browser.get(self.ISRCTN_SEARCH_URL + urlencode({"q": search_term}))
         self.browser.find_element_by_id('opener').click()
         self.browser.find_element_by_id('select-all').click()
         self.browser.find_element_by_class_name('download-csv').click()
@@ -45,22 +43,6 @@ class ISRCTNSearcher(Searcher):
         
         # read the csv file into a DataFrame
         df = pd.read_csv(RESULTS_CSV_FILE_NAME)
-        
-        # rename our desired columns
-        df = df.rename(
-            index=str, 
-            columns={
-                'Sponsor': 'lead_sponsor',
-                'Overall trial end': 'estimated_completion_date',
-                'ISRCTN': 'ct_id', 'Overall trial status': 'status',
-                'Title': 'title'
-            }
-        )
-        
-        # collaborators defined as all funders, except for lead_sponsor
-        df['collaborators'] = (df['Funder'].str.split(';')\
-            .apply(strip_str_list_els).apply(set) 
-                - df['lead_sponsor'].apply(lambda s: {s})).apply(list)
         
         # function for making HTTP requests for the given ISRCTN number to 
         # retrieve principal investigator and number of sites
@@ -80,7 +62,7 @@ class ISRCTNSearcher(Searcher):
             return (pi, nos)
         
         # convert to DataFrame and join the DataFrames
-        df2 = pd.DataFrame(df['ct_id'].apply(get_extra_attrs).values.tolist())
+        df2 = pd.DataFrame(df['ISRCTN'].apply(get_extra_attrs).values.tolist())
         df2 = df2.rename(columns=
             {
                 0: 'principal_investigator', 1: 'number_of_sites'
@@ -90,19 +72,18 @@ class ISRCTNSearcher(Searcher):
         df.index = df2.index
         
         df = df.join(df2)
-        df = df[[
-            'ct_id', 
-            'title', 
-            'status', 
-            'principal_investigator', 
-            'number_of_sites', 
-            'lead_sponsor', 
-            'collaborators', 
-            'estimated_completion_date'
-        ]]
         
         # delete the file
         os.remove(RESULTS_CSV_FILE_NAME)
 
         # return DataFrame for more processing
-        return df
+        
+        if format == "csv":
+            df.to_csv("isrctn_results_%s.csv" % search_term)
+            return "isrctn_results_%s.csv" % search_term
+        else:
+            df.to_parquet("isrctn_results_%s.parquet" % search_term)
+            return "isrctn_results_%s.parquet" % search_term
+
+
+        
