@@ -20,8 +20,6 @@ class ISRCTNSearcher(Searcher):
     
     def search_and_download_raw(self, search_term, format="parquet"):
         
-
-        
         # download file path changes dynamically based on search term, so we 
         # cannot pre-define it
         RESULTS_CSV_FILE_NAME = 'ISRCTN search results for %s.csv'\
