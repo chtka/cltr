@@ -3,13 +3,13 @@ import pandas as pd
 from processors.processor import Processor
 
 class ISRCTNProcessor(Processor):
-    def process_and_load_df(self, filepath):
+    def process_and_load_df(self, filepath_or_buffer):
 
         # utility function for converting the downloaded CSV data
         def strip_str_list_els(els):
             return list(map(str.strip, els))
 
-        df = pd.read_parquet(filepath)
+        df = pd.read_parquet(filepath_or_buffer)
 
         # rename our desired columns
         df = df.rename(
