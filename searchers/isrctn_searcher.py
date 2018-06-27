@@ -13,13 +13,31 @@ from selenium.common.exceptions import NoSuchElementException
 from searchers.searcher import Searcher
 
 class ISRCTNSearcher(Searcher):
-    
+    """
+    A Searcher class that uses a Selenium driver for Mozilla Firefox to query
+    the ISRCTN registry and download the search results for the 
+    clinical trials matching the query.
+
+    The results from the ISRCTN registry come in the form of a csv file, where
+    each row contains the data for a clinical trial that matches the query.
+    """
+        
     # define URLs
     ISRCTN_SEARCH_URL = "http://www.isrctn.com/search?"
     ISRCTN_BASE_URL = "http://www.isrctn.com/"
     
     def search_and_download_raw(self, search_term, format="parquet"):
-        
+        """
+        Searches the ISRCTN registry for clinical trials matching the
+        specified search term.
+
+        Args:
+            search_term: The search term for which to search 
+            the ISRCTRN registry.
+
+        Returns:
+            string: The filepath to the downloaded raw data.
+        """        
         # download file path changes dynamically based on search term, so we 
         # cannot pre-define it
         RESULTS_CSV_FILE_NAME = 'ISRCTN search results for %s.csv'\
@@ -44,7 +62,6 @@ class ISRCTNSearcher(Searcher):
             
             # wait for the csv file to download
             while (not path.exists(RESULTS_CSV_FILE_NAME)) or path.exists(RESULTS_CSV_FILE_NAME + '.part'):
-                print(not path.exists(RESULTS_CSV_FILE_NAME), path.exists(RESULTS_CSV_FILE_NAME + '.part'))
                 sleep(.1)
             
 
@@ -55,6 +72,8 @@ class ISRCTNSearcher(Searcher):
             # function for making HTTP requests for the given ISRCTN number to 
             # retrieve principal investigator and number of sites
             def get_extra_attrs(isrctn_ser):
+
+                print("Getting extra info for", isrctn_ser)
 
                 r = requests.get("http://www.isrctn.com/%s" % isrctn_ser)
 

@@ -11,11 +11,33 @@ from selenium.common.exceptions import NoSuchElementException
 
 
 class ClinicalTrialsSearcher(Searcher):
+    """
+    A Searcher class that uses a Selenium driver for Mozilla Firefox to query
+    the ClinicalTrials.gov site and download the search results for the 
+    clinical trials matching the query.
+
+    The results from ClinicalTrials.gov come in the form of a zip archive of
+    XML files, one for each clinical trial matching the query.
+    """
     
     CLINICAL_TRIALS_BASE_URL = "https://clinicaltrials.gov/ct2/results?"
+    
+    # default file name for the downloaded zip archive
     SEARCH_RESULTS_ZIP_FILE_NAME = "search_result.zip"
     
     def search_and_download_raw(self, search_term):
+        """
+        Searches ClinicalTrials.gov for clinical trials matching the
+        specified search term.
+
+        Args:
+            search_term: The search term for which to search 
+            ClinicalTrials.gov.
+
+        Returns:
+            string: The filepath to the downloaded raw data.
+        """
+
         
         # delete old file if it exists
         if path.exists(self.SEARCH_RESULTS_ZIP_FILE_NAME):

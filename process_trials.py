@@ -7,6 +7,8 @@ from processors.clinical_trials_processor import ClinicalTrialsProcessor
 
 from search_trials import CLINICAL_TRIALS_DATA_BUCKET_NAME
 
+CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME = 'clinical-trials-analysis-data-postprocessing'
+
 processor = ClinicalTrialsProcessor()
 
 import boto3
