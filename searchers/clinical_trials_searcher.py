@@ -37,7 +37,6 @@ class ClinicalTrialsSearcher(Searcher):
         Returns:
             string: The filepath to the downloaded raw data.
         """
-
         
         # delete old file if it exists
         if path.exists(self.SEARCH_RESULTS_ZIP_FILE_NAME):

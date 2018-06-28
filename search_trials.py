@@ -9,7 +9,23 @@ from searchers.isrctn_searcher import ISRCTNSearcher
 
 CLINICAL_TRIALS_DATA_BUCKET_NAME = "clinical-trials-analysis-data-raw"
 
+CLINICAL_TRIALS_GOV_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_DATA_BUCKET_NAME + "/*/*/*/CLINICAL_TRIALS_GOV/*/*.zip"
+ANZCTR_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_DATA_BUCKET_NAME + "/*/*/*/ANZCTR/*/*.zip"
+
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
+
+def search_trials(terms, site_name, Searcher):
+    with Searcher() as searcher:
+        for term in terms:
+            filepath = searcher.search_and_download_raw(term)
+            if filepath:
+                print("Downloaded", filepath)
+                filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, site_name, term, filepath)
+                bucket.upload_file(os.path.join(os.getcwd(), filepath), filepath_s3)
+                os.remove(os.path.join(os.getcwd(), filepath))
+                print("Uploaded", filepath_s3)
+            else:
+                print("No", site_name, "search results found for", term)
 
 if __name__ == "__main__":
 
@@ -35,46 +51,5 @@ if __name__ == "__main__":
 
             terms.append(term.rstrip())
 
-    with ANZCTRSearcher() as anzsearcher:
-
-        for term in terms:
-
-            anzctr_filepath = anzsearcher.search_and_download_raw(term)
-            if anzctr_filepath:
-                print("Downloaded", anzctr_filepath)
-                anzctr_filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, "ANZCTR", term, anzctr_filepath)
-                bucket.upload_file(os.path.join(os.getcwd(), anzctr_filepath), anzctr_filepath_s3)
-                os.remove(os.path.join(os.getcwd(), anzctr_filepath))
-                print("Uploaded", anzctr_filepath_s3)
-            else:
-                print("No ANZCTR search results found for", term)
-
-    # with ISRCTNSearcher() as isrsearcher:
-
-    #     for term in terms:
-
-    #         isrctn_filepath = isrsearcher.search_and_download_raw(term)
-
-    #         print(isrctn_filepath)
-
-    #         if isrctn_filepath:
-    #             isrctn_filepath_s3 = "%s/%s/%d/%02d/%02d/%s" % ("ISRCTN", term, d.year, d.month, d.day, isrctn_filepath)
-    #             bucket.upload_file(os.path.join(os.getcwd(), isrctn_filepath), isrctn_filepath_s3)
-    #             os.remove(os.path.join(os.getcwd(), isrctn_filepath))
-
-    with ClinicalTrialsSearcher() as cltrsearcher:
-
-        for term in terms:
-
-            cltr_filepath = cltrsearcher.search_and_download_raw(term)
-
-            print(cltr_filepath)
-
-            if cltr_filepath:
-                print("Downloaded", cltr_filepath, ".")
-                cltr_filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, "CLINICAL_TRIALS_GOV", term, cltr_filepath)
-                bucket.upload_file(os.path.join(os.getcwd(), cltr_filepath), cltr_filepath_s3)
-                os.remove(os.path.join(os.getcwd(), cltr_filepath))    
-                print("Uploaded", cltr_filepath_s3, ".")
-            else:
-                print("No ClinicalTrials.gov search results found for", term, ".")
+    search_trials(terms, "ANZCTR", ANZCTRSearcher)
+    search_trials(terms, "CLINICAL_TRIALS_GOV", ClinicalTrialsSearcher)

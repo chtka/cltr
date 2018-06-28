@@ -1,5 +1,6 @@
+import io
 import os
-
+import s3fs
 
 from processors.isrctn_processor import ISRCTNProcessor
 from processors.anzctr_processor import ANZCTRProcessor
@@ -9,30 +10,31 @@ from search_trials import CLINICAL_TRIALS_DATA_BUCKET_NAME
 
 CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME = 'clinical-trials-analysis-data-postprocessing'
 
-processor = ClinicalTrialsProcessor()
+CLINICAL_TRIALS_GOV_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_DATA_BUCKET_NAME + "/*/*/*/CLINICAL_TRIALS_GOV/*/*.zip"
+ANZCTR_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_DATA_BUCKET_NAME + "/*/*/*/ANZCTR/*/*.zip"
 
-import boto3
-import io
+def process_trials(fsys, paths, bucket, processor):
+    for path in paths:
+        with fsys.open(path) as data:
+            df = processor.process_and_load_df(data)
+            [_, obj] = path.split('/', 1)
 
-s3 = boto3.resource('s3')
-bucket = s3.Bucket(CLINICAL_TRIALS_DATA_BUCKET_NAME)
+            print(obj)
 
-for obj_summary in bucket.objects.all():
-    buffer = io.BytesIO()
-    obj = obj_summary.Object()
+            outfile_path = bucket + '/' + os.path.splitext(obj)[0] + '.json'
 
-    print('Processing %s' % obj.key)
+            with fsys.open(outfile_path, 'wb') as f:
+                f.write(str.encode(df.to_json(orient='records', lines=True)))
+                f.flush()
 
-    obj.download_fileobj(buffer)
+            print('Wrote', outfile_path)
 
-    df = processor.process_and_load_df(buffer)
+if __name__ == '__main__':
 
-    csv_buffer = io.StringIO()
+    fs = s3fs.S3FileSystem()
 
-    df.to_csv(csv_buffer)
+    clinical_trials_gov_paths = fs.glob(CLINICAL_TRIALS_GOV_DATA_GLOBBING_PATTERN)
+    process_trials(fs, clinical_trials_gov_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ClinicalTrialsProcessor())
 
-    s3.Object('clinical-trials-analysis-data-postprocessing', os.path.splitext(obj_summary.key)[0] + '.csv').put(Body=csv_buffer.getvalue())
-
-
-
-
+    anzctr_trials_paths = fs.glob(ANZCTR_DATA_GLOBBING_PATTERN)
+    process_trials(fs, anzctr_trials_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ANZCTRProcessor())
