@@ -48,4 +48,8 @@ class Searcher():
         raise NotImplementedError("Searchers must implement this method.")
 
     def close_browser(self):
+        """
+        Closes the headless Firefox browser.
+        """
+
         self.browser.close()
