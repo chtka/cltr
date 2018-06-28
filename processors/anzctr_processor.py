@@ -1,4 +1,4 @@
-import lxml
+import lxml.etree
 import pandas as pd
 import zipfile
 

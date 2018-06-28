@@ -8,7 +8,7 @@ from processors.isrctn_processor import ISRCTNProcessor
 from processors.anzctr_processor import ANZCTRProcessor
 from processors.clinical_trials_processor import ClinicalTrialsProcessor
 
-def process_trials(fsys, paths, bucket, processor):
+def process_trials(fsys, paths, bucket, processor, log_buffer):
     """
     Processes the specified file data paths using the provided processor type
     and uploads the data to the desired S3 bucket.
@@ -32,6 +32,7 @@ def process_trials(fsys, paths, bucket, processor):
         with fsys.open(path) as data:
 
             print("[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", path)
+            log_buffer.write("[%s] DOWNLOAD %s\n" % (datetime.datetime.utcnow(), path))
 
             # use the processor to load the raw data into pandas
             # DataFrame and transform it as desired
@@ -47,10 +48,17 @@ def process_trials(fsys, paths, bucket, processor):
                 f.flush()
 
             print("[%s]" % datetime.datetime.utcnow(), "UPLOAD", outfile_path)
+            log_buffer.write("[%s] UPLOAD %s\n" % (datetime.datetime.utcnow(), outfile_path))
+
 
 if __name__ == '__main__':
 
+    d = datetime.datetime.now()
+
+    log_buffer = io.StringIO()
+
     print("[%s]" % datetime.datetime.utcnow(), "START", __file__)
+    log_buffer.write("[%s] START %s\n" % (datetime.datetime.utcnow(), __file__))
 
     # config
     with open('config.json') as config_data_file:
@@ -61,18 +69,26 @@ if __name__ == '__main__':
 
     CLINICAL_TRIALS_GOV_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_RAW_DATA_BUCKET_NAME + "/*/*/*/CLINICAL_TRIALS_GOV/*/*.zip"
     ANZCTR_DATA_GLOBBING_PATTERN = CLINICAL_TRIALS_RAW_DATA_BUCKET_NAME + "/*/*/*/ANZCTR/*/*.zip"
-        
 
     # using s3fs to access our S3 buckets like a local filesystem
     fs = s3fs.S3FileSystem()
 
     # process ClinicalTrials.gov data
     clinical_trials_gov_paths = fs.glob(CLINICAL_TRIALS_GOV_DATA_GLOBBING_PATTERN)
-    process_trials(fs, clinical_trials_gov_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ClinicalTrialsProcessor())
+    process_trials(fs, clinical_trials_gov_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ClinicalTrialsProcessor(), log_buffer)
 
     # process ANZCTR database data
     anzctr_trials_paths = fs.glob(ANZCTR_DATA_GLOBBING_PATTERN)
-    process_trials(fs, anzctr_trials_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ANZCTRProcessor())
+    process_trials(fs, anzctr_trials_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ANZCTRProcessor(), log_buffer)
 
     print("[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
+    log_buffer.write("[%s] STOP %s\n" % (datetime.datetime.utcnow(), __file__))
+
+    import boto3
+
+    s3 = boto3.resource('s3')
+
+    process_trials_log_file = "%d/%02d/%02d/process_trials.log" % (d.year, d.month, d.day)
+
+    s3.Object(CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, process_trials_log_file).put(Body=log_buffer.getvalue())
 

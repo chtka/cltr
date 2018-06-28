@@ -1,5 +1,6 @@
 import boto3
 import datetime
+import io
 import json
 import os
 import sys
@@ -12,7 +13,7 @@ from searchers.isrctn_searcher import ISRCTNSearcher
 
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 
-def search_trials(terms, site_name, Searcher):
+def search_trials(terms, site_name, Searcher, log_buffer):
     """
     Uses the specified Searcher to query the given site using the list of
     query terms. Downloads the raw data and uploads it to S3.
@@ -31,7 +32,9 @@ def search_trials(terms, site_name, Searcher):
             # download the raw data
             filepath = searcher.search_and_download_raw(term)
             if filepath:
+                
                 print("[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
+                log_buffer.write("[%s] DOWNLOAD %s\n" % (datetime.datetime.utcnow(), filepath))
                 
                 # upload file and remove local copy
                 filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, site_name, term, filepath)
@@ -39,13 +42,19 @@ def search_trials(terms, site_name, Searcher):
                 os.remove(os.path.join(os.getcwd(), filepath))
                 
                 print("[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
+                log_buffer.write("[%s] UPLOAD %s\n" % (datetime.datetime.utcnow(), filepath_s3))
             
             else:
+
                 print("[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", site_name, "+", term)
+                log_buffer.write("[%s] FAILED_SEARCH: %s + %s\n" % (datetime.datetime.utcnow(), site_name, term))
 
 if __name__ == "__main__":
 
-    print("[%s]" % datetime.datetime.utcnow(), "START", __file__)
+    log_buffer = io.StringIO()
+
+    print("[%s]" % datetime.datetime.utcnow(), "START", __file__)    
+    log_buffer.write("[%s] START %s\n" % (datetime.datetime.utcnow(), __file__))
 
     searchers = []
 
@@ -80,8 +89,14 @@ if __name__ == "__main__":
             terms.append(term.rstrip())
 
 
-    search_trials(terms, "ANZCTR", ANZCTRSearcher)
-    search_trials(terms, "CLINICAL_TRIALS_GOV", ClinicalTrialsSearcher)
+    search_trials(terms, "ANZCTR", ANZCTRSearcher, log_buffer)
+    search_trials(terms, "CLINICAL_TRIALS_GOV", ClinicalTrialsSearcher, log_buffer)
 
+    
     print("[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
+    log_buffer.write("[%s] STOP %s\n" % (datetime.datetime.utcnow(), __file__))
+
+    log_file_path = "%d/%02d/%02d/search_trials.log" % (d.year, d.month, d.day)
+
+    s3.Object(data['bucket_names']['raw_data_bucket_name'], log_file_path).put(Body=log_buffer.getvalue())
 
