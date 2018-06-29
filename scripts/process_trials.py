@@ -1,7 +1,12 @@
+import sys
+import os
+from os import path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
+
 import datetime
 import io
 import json
-import os
 import s3fs
 
 from processors.isrctn_processor import ISRCTNProcessor
