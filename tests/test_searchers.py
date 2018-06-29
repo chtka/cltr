@@ -40,3 +40,4 @@ class TestSearchers(unittest.TestCase):
                 os.remove(DOWNLOAD_FILE_FORMAT % QUERY)
 
 
+
