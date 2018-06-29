@@ -3,3 +3,4 @@ search_term_list.txt
 geckodriver.log
 .pylintrc
 config.json
+.vscode/
