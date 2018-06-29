@@ -60,16 +60,16 @@ class ANZCTRProcessor(Processor):
                 ct_id = actr_number_list[0]
             
             # title
-            title = root.xpath('./trial_identification/studytitle/text()')[0]
+            title = root.xpath('./trial_identification/studytitle/text()')[0].strip()
             
             # status
-            status = root.xpath('./stage/text()')[0]
+            status = root.xpath('./stage/text()')[0].strip()
             
             # principal_investigator
             principal_investigator = root\
                 .xpath(
                     './/type[text()="Principal Investigator"]/../name/text()'
-                )[0] if len(root.xpath(
+                )[0].strip() if len(root.xpath(
                     './/type[text()="Principal Investigator"]/../name/text()'
                 )) != 0 else ""
             
@@ -77,7 +77,7 @@ class ANZCTRProcessor(Processor):
             number_of_sites = 0
             
             # lead_sponsor
-            lead_sponsor = root.xpath('.//primarysponsorname/text()')[0]
+            lead_sponsor = root.xpath('.//primarysponsorname/text()')[0].strip()
             
             # collaborators - defined as all funding sources and collaborators (minus the primary sponsor)
             collaborators = list((set(root.xpath('.//fundingsource/fundingname/text()')) |
