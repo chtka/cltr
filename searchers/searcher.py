@@ -13,6 +13,9 @@ class Searcher():
         Constructor; sets up the Firefox web browser, which
         should be closed upon termination of the driver program.
         """
+        self.options = webdriver.firefox.options.Options()
+        self.options.add_argument('-headless')
+
         self.fp = webdriver.FirefoxProfile()
 
         self.fp.set_preference("browser.download.folderList",2)
@@ -22,7 +25,7 @@ class Searcher():
         self.fp.set_preference("browser.helperApps.neverAsk.saveToDisk", 
             content_types.ALL_CONTENT_TYPES)
 
-        self.browser = webdriver.Firefox(firefox_profile=self.fp)
+        self.browser = webdriver.Firefox(firefox_profile=self.fp, firefox_options=self.options)
 
     def __enter__(self):
         """

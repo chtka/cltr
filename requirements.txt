@@ -5,3 +5,4 @@ s3fs==0.1.5
 pandas==0.23.0
 lxml==4.2.1
 bs4==0.0.1
+requests==2.19.1
