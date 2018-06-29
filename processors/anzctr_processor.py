@@ -71,10 +71,10 @@ class ANZCTRProcessor(Processor):
                     './/type[text()="Principal Investigator"]/../name/text()'
                 )[0].strip() if len(root.xpath(
                     './/type[text()="Principal Investigator"]/../name/text()'
-                )) != 0 else ""
+                )) != 0 else None
             
-            # number_of_sites
-            number_of_sites = 0
+            # number_of_sites - ANZCTR does not provide the number of sites
+            number_of_sites = None
             
             # lead_sponsor
             lead_sponsor = root.xpath('.//primarysponsorname/text()')[0].strip()
@@ -84,7 +84,7 @@ class ANZCTRProcessor(Processor):
                                  set(root.xpath('.//othercollaborator/othercollaboratorname/text()'))) - {lead_sponsor})
             
             # estimated_completion_date - ANZCTR does not provide completion dates, only submission and approval dates
-            estimated_completion_date = "Unknown"
+            estimated_completion_date = None
             
             row = pd.Series({
                 "ct_id": ct_id, 
