@@ -17,3 +17,5 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckod
 RUN tar -xzf geckodriver-v0.21.0-linux64.tar.gz
 
 RUN mv geckodriver /usr/bin/geckodriver
+
+RUN apt-get install -y firefox
