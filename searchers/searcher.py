@@ -2,6 +2,7 @@ import os
 from selenium import webdriver
 from searchers import content_types
 
+
 class Searcher():
     """ 
     Generic parent class for classes that download raw data from any one of
@@ -25,7 +26,7 @@ class Searcher():
         self.fp.set_preference("browser.helperApps.neverAsk.saveToDisk", 
             content_types.ALL_CONTENT_TYPES)
 
-        self.browser = webdriver.Firefox(firefox_profile=self.fp, firefox_options=self.options)
+        self.browser = webdriver.Firefox(firefox_profile=self.fp, options=self.options)
 
     def __enter__(self):
         """
