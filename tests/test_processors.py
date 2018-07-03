@@ -56,6 +56,6 @@ class TestProcessors(unittest.TestCase):
         self.assertEqual(trial['estimated_completion_date'], "September 2007")
         self.assertEqual(trial['number_of_sites'], 3)
 
-    def test_isrctn_processor(self):
-        pass
+    # def test_isrctn_processor(self):
+    #     pass
 
