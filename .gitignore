@@ -4,3 +4,4 @@ geckodriver.log
 .pylintrc
 config.json
 .vscode/
+todos
