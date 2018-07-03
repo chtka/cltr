@@ -1,14 +1,12 @@
-FROM ubuntu:latest
+FROM chtka/python-ubuntu
+
+RUN apt-get upgrade -y && apt-get update -y
+
+RUN apt-get install wget -y
 
 RUN mkdir clinical-trials-analysis
 
 ADD . /clinical-trials-analysis
-
-RUN apt-get upgrade && apt-get update -y
-
-RUN apt-get install wget -y
-
-RUN apt-get install python3 -y && apt-get install python3-pip -y
 
 RUN pip3 install -r /clinical-trials-analysis/requirements.txt
 

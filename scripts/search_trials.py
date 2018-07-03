@@ -7,7 +7,9 @@ import boto3
 import datetime
 import io
 import json
+import logging
 import os
+from socket import gethostname
 import sys
 
 from searchers.clinical_trials_searcher import ClinicalTrialsSearcher
@@ -18,7 +20,7 @@ from searchers.isrctn_searcher import ISRCTNSearcher
 
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 
-def search_trials(terms, site_name, Searcher, log_buffer):
+def search_trials(terms, site_name, Searcher, logger):
     """
     Uses the specified Searcher to query the given site using the list of
     query terms. Downloads the raw data and uploads it to S3.
@@ -39,7 +41,7 @@ def search_trials(terms, site_name, Searcher, log_buffer):
             if filepath:
                 
                 print("[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
-                log_buffer.write("[%s] DOWNLOAD %s\n" % (datetime.datetime.utcnow(), filepath))
+                logger.write("[%s] DOWNLOAD %s" % (datetime.datetime.utcnow(), filepath))
                 
                 # upload file and remove local copy
                 filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, site_name, term, filepath)
@@ -47,21 +49,26 @@ def search_trials(terms, site_name, Searcher, log_buffer):
                 os.remove(os.path.join(os.getcwd(), filepath))
                 
                 print("[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
-                log_buffer.write("[%s] UPLOAD %s\n" % (datetime.datetime.utcnow(), filepath_s3))
+                logger.info("[%s] UPLOAD %s\n" % (datetime.datetime.utcnow(), filepath_s3))
             
             else:
 
                 print("[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", site_name, "+", term)
-                log_buffer.write("[%s] FAILED_SEARCH: %s + %s\n" % (datetime.datetime.utcnow(), site_name, term))
+                logger.warning("[%s] FAILED_SEARCH: %s + %s" % (datetime.datetime.utcnow(), site_name, term))
 
 if __name__ == "__main__":
 
+    # setting up logging
     log_buffer = io.StringIO()
+    log_handler = logging.StreamHandler(log_buffer)
+    logger = logging.getLogger("search_trials")
+    logger.setLevel(logging.INFO)
+    logger.addHandler(log_handler)
 
     print("[%s]" % datetime.datetime.utcnow(), "START", __file__)    
-    log_buffer.write("[%s] START %s\n" % (datetime.datetime.utcnow(), __file__))
+    logger.info("[%s] START %s" % (datetime.datetime.utcnow(), __file__))
 
-    searchers = []
+    searchers = dict()
 
     # config
     with open('config.json') as config_data_file:
@@ -72,9 +79,9 @@ if __name__ == "__main__":
         # config searchers
         for searcher_name in data['searchers']:
             if searcher_name == 'clinical-trials-gov':
-                searchers.append(ClinicalTrialsSearcher)
+                searchers['CLINICAL_TRIALS_GOV'] = ClinicalTrialsSearcher
             elif searcher_name == 'anzctr':
-                searchers.append(ANZCTRSearcher)
+                searchers['ANZCTR'] = ANZCTRSearcher
 
     d = datetime.date.today()
 
@@ -93,15 +100,14 @@ if __name__ == "__main__":
 
             terms.append(term.rstrip())
 
-
-    search_trials(terms, "ANZCTR", ANZCTRSearcher, log_buffer)
-    search_trials(terms, "CLINICAL_TRIALS_GOV", ClinicalTrialsSearcher, log_buffer)
+    for searcher_name in searchers:
+        search_trials(terms, searcher_name, searchers[searcher_name], logger)
 
     
     print("[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
-    log_buffer.write("[%s] STOP %s\n" % (datetime.datetime.utcnow(), __file__))
+    logger.info("[%s] STOP %s" % (datetime.datetime.utcnow(), __file__))
 
-    log_file_path = "%d/%02d/%02d/search_trials.log" % (d.year, d.month, d.day)
+    log_file_path = "%d/%02d/%02d/search_trials_%s.log" % (d.year, d.month, d.day, gethostname())
 
     s3.Object(data['bucket_names']['raw_data_bucket_name'], log_file_path).put(Body=log_buffer.getvalue())
 

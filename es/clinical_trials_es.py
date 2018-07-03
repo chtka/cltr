@@ -14,5 +14,7 @@ def get_bulk_api_formatted_generator(fs_open, path, _index, _type):
 
             yield action
 
+es = Elasticsearch()
+
 
     
