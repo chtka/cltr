@@ -17,3 +17,5 @@ RUN tar -xzf geckodriver-v0.21.0-linux64.tar.gz
 RUN mv geckodriver /usr/bin/geckodriver
 
 RUN apt-get install -y firefox
+
+# check licensing agreements
