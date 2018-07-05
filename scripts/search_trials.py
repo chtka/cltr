@@ -40,23 +40,25 @@ def search_trials(terms, site_name, Searcher, logger):
             filepath = searcher.search_and_download_raw(term)
             if filepath:
                 
-                print("[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
-                logger.write("[%s] DOWNLOAD %s" % (datetime.datetime.utcnow(), filepath))
+                print(hostname, "[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
+                logger.info("%s [%s] DOWNLOAD %s" % (hostname, datetime.datetime.utcnow(), filepath))
                 
                 # upload file and remove local copy
                 filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, site_name, term, filepath)
                 bucket.upload_file(os.path.join(os.getcwd(), filepath), filepath_s3)
                 os.remove(os.path.join(os.getcwd(), filepath))
                 
-                print("[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
-                logger.info("[%s] UPLOAD %s\n" % (datetime.datetime.utcnow(), filepath_s3))
+                print(hostname, "[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
+                logger.info("%s [%s] UPLOAD %s\n" % (hostname, datetime.datetime.utcnow(), filepath_s3))
             
             else:
 
-                print("[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", site_name, "+", term)
-                logger.warning("[%s] FAILED_SEARCH: %s + %s" % (datetime.datetime.utcnow(), site_name, term))
+                print(hostname, "[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", site_name, "+", term)
+                logger.warning("%s [%s] FAILED_SEARCH: %s + %s" % (hostname, datetime.datetime.utcnow(), site_name, term))
 
 if __name__ == "__main__":
+
+    hostname = gethostname()
 
     # setting up logging
     log_buffer = io.StringIO()
@@ -65,8 +67,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     logger.addHandler(log_handler)
 
-    print("[%s]" % datetime.datetime.utcnow(), "START", __file__)    
-    logger.info("[%s] START %s" % (datetime.datetime.utcnow(), __file__))
+    print(hostname, "[%s]" % datetime.datetime.utcnow(), "START", __file__)    
+    logger.info("%s [%s] START %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
     searchers = dict()
 
@@ -104,8 +106,8 @@ if __name__ == "__main__":
         search_trials(terms, searcher_name, searchers[searcher_name], logger)
 
     
-    print("[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
-    logger.info("[%s] STOP %s" % (datetime.datetime.utcnow(), __file__))
+    print(hostname, "[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
+    logger.info("%s [%s] STOP %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
     log_file_path = "%d/%02d/%02d/search_trials_%s.log" % (d.year, d.month, d.day, gethostname())
 

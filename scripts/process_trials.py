@@ -39,8 +39,8 @@ def process_trials(fsys, paths, bucket, processor, log_buffer):
     for path in paths:
         with fsys.open(path) as data:
 
-            print("[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", path)
-            logger.info("[%s] DOWNLOAD %s" % (datetime.datetime.utcnow(), path))
+            print(hostname, "[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", path)
+            logger.info("%s [%s] DOWNLOAD %s" % (hostname, datetime.datetime.utcnow(), path))
 
             # use the processor to load the raw data into pandas
             # DataFrame and transform it as desired
@@ -55,11 +55,13 @@ def process_trials(fsys, paths, bucket, processor, log_buffer):
                 f.write(str.encode(df.to_json(orient='records', lines=True)))
                 f.flush()
 
-            print("[%s]" % datetime.datetime.utcnow(), "UPLOAD", outfile_path)
-            logger.info("[%s] UPLOAD %s" % (datetime.datetime.utcnow(), outfile_path))
+            print(hostname, "[%s]" % datetime.datetime.utcnow(), "UPLOAD", outfile_path)
+            logger.info("%s [%s] UPLOAD %s" % (hostname, datetime.datetime.utcnow(), outfile_path))
 
 
 if __name__ == '__main__':
+
+    hostname = gethostname()
 
     d = datetime.datetime.now()
 
@@ -69,8 +71,8 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
     logger.addHandler(log_handler)
 
-    print("[%s]" % datetime.datetime.utcnow(), "START", __file__)
-    logger.info("[%s] START %s" % (datetime.datetime.utcnow(), __file__))
+    print(hostname, "[%s]" % datetime.datetime.utcnow(), "START", __file__)
+    logger.info("%s [%s] START %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
     # config
     with open('config.json') as config_data_file:
@@ -93,14 +95,14 @@ if __name__ == '__main__':
     anzctr_trials_paths = fs.glob(ANZCTR_DATA_GLOBBING_PATTERN)
     process_trials(fs, anzctr_trials_paths, CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, ANZCTRProcessor(), log_buffer)
 
-    print("[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
-    logger.info("[%s] STOP %s" % (datetime.datetime.utcnow(), __file__))
+    print(hostname, "[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
+    logger.info("%s [%s] STOP %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
     import boto3
 
     s3 = boto3.resource('s3')
 
-    process_trials_log_file = "%d/%02d/%02d/process_trials_%s.log" % (d.year, d.month, d.day, gethostname())
+    process_trials_log_file = "%d/%02d/%02d/process_trials_%s.log" % (d.year, d.month, d.day, hostname)
 
     s3.Object(CLINICAL_TRIALS_PROCESSED_DATA_BUCKET_NAME, process_trials_log_file).put(Body=log_buffer.getvalue())
 
