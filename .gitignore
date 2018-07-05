@@ -5,3 +5,4 @@ geckodriver.log
 config.json
 .vscode/
 todos
+.pytest_cache/
