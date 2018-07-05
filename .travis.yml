@@ -9,7 +9,7 @@ before_install:
   - mkdir geckodriver
   - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
-  - docker build -t chtka/clinical-trials-analysis:latest
+  - docker build -t chtka/clinical-trials-analysis:latest .
   - docker run chtka/clinical-trials-analysis:latest bash -c "cd clinical-trials-analysis; pytest"
 install:
   - pip install -r requirements.txt
