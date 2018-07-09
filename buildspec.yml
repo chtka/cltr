@@ -1,0 +1,13 @@
+phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get upgrade -y
+      - apt-get install -y firefox
+      - wget https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
+      - mkdir geckodriver
+      - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
+      - export PATH=$PATH:$PWD/geckodriver
+      - pip install -r requirements.txt
+  build:
+    - pytest
