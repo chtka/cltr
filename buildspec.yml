@@ -10,4 +10,5 @@ phases:
       - export PATH=$PATH:$PWD/geckodriver
       - pip install -r requirements.txt
   build:
-    - pytest
+    commands:
+      - pytest
