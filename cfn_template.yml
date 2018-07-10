@@ -26,8 +26,9 @@ Resources:
               echo export CFN_STACK_NAME=${AWS::StackName} > /etc/profile
               yum update -y
               yum install docker -y
+              aws s3 cp s3://ct-analysis-deploy/config.json config.json
               service docker start
-              docker run chtka/helloworld > out.txt
+              docker run -v `pwd`/config.json:/clinical-trials-analysis/config.json chtka/clinical-trials-analysis:latest > /search_trials.log
   CLTRSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
