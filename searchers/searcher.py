@@ -27,7 +27,7 @@ class Searcher():
             content_types.ALL_CONTENT_TYPES)
 
         self.browser = webdriver.Firefox(firefox_profile=self.fp, options=self.options)
-        self.browser.implicitly_wait(5)
+        self.browser.implicitly_wait(30)
 
     def __enter__(self):
         """
