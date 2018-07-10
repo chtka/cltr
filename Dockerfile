@@ -18,4 +18,6 @@ RUN mv geckodriver /usr/bin/geckodriver
 
 RUN apt-get install -y firefox
 
-# check licensing agreements
+RUN cd clinical-trials-analysis
+
+CMD ["python3", "scripts/search_trials.py"]
