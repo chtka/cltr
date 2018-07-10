@@ -10,9 +10,9 @@ ADD . /clinical-trials-analysis
 
 RUN pip3 install -r /clinical-trials-analysis/requirements.txt
 
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.20.1/geckodriver-v0.20.1-linux64.tar.gz
 
-RUN tar -xzf geckodriver-v0.21.0-linux64.tar.gz
+RUN tar -xzf geckodriver-v0.20.1-linux64.tar.gz
 
 RUN mv geckodriver /usr/bin/geckodriver
 
