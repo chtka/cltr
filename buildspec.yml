@@ -13,4 +13,6 @@ phases:
       - pip install -r requirements.txt
   build:
     commands:
+      - echo Build started on `date`
+      - echo Running tests...
       - pytest
