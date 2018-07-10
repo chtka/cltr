@@ -20,4 +20,4 @@ RUN apt-get install -y firefox
 
 RUN cd clinical-trials-analysis
 
-CMD cd clincial-trials-analysis && python3 scripts/search_trials.py
+CMD cd clinical-trials-analysis && python3 scripts/search_trials.py
