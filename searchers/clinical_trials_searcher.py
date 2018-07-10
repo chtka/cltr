@@ -56,5 +56,6 @@ class ClinicalTrialsSearcher(Searcher):
             os.rename(self.SEARCH_RESULTS_ZIP_FILE_NAME, "clinical_trials_gov_results_%s.zip" % search_term)
 
             return "clinical_trials_gov_results_%s.zip" % search_term
-        except NoSuchElementException:
+        except NoSuchElementException as e:
+            print(e)
             return None

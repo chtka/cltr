@@ -74,5 +74,6 @@ class ANZCTRSearcher(Searcher):
 
             return "anzctr_results_%s.zip" % search_term
 
-        except NoSuchElementException:
+        except NoSuchElementException as e:
+            print(e)
             return None
