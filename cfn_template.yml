@@ -1,0 +1,68 @@
+Parameters:
+  KeyPairName:
+    Description: Provide an existing EC2 KeyPair to enable SSH access into the server.
+    Type: AWS::EC2::KeyPair::KeyName
+Resources:
+  EC2Instance:
+      Type: AWS::EC2::Instance
+      Properties:
+        InstanceType: t2.micro
+        ImageId: ami-e0ba5c83
+        SecurityGroupIds:
+          - !Ref CLTRSecurityGroup
+        Tags:
+          - Key: Name
+            Value: !Ref AWS::StackName
+        KeyName: !Ref KeyPairName
+        IamInstanceProfile:
+          !Ref CLTRS3FullAccessInstanceProfile
+        UserData:
+          'Fn::Base64':
+            !Sub |
+              #!/bin/bash
+              sudo -i
+              echo hello > test.txt
+              echo ${AWS::StackName} > test2.txt
+              echo export CFN_STACK_NAME=${AWS::StackName} > /etc/profile
+              yum update -y
+              yum install docker -y
+              service docker start
+              docker run chtka/helloworld > out.txt
+  CLTRSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open Port 22 for SSH, 80 for HTTP.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+  CLTRS3FullAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: Allow
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  CLTRS3FullAccessInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref CLTRS3FullAccessRole
+
+
+
+
+        
