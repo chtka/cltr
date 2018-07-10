@@ -28,6 +28,7 @@ class Searcher():
 
         self.browser = webdriver.Firefox(firefox_profile=self.fp, options=self.options)
         self.browser.implicitly_wait(30)
+        self.browser.set_page_load_timeout(30)
 
     def __enter__(self):
         """
