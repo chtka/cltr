@@ -16,7 +16,7 @@ RUN tar -xzf geckodriver-v0.21.0-linux64.tar.gz
 
 RUN mv geckodriver /usr/bin/geckodriver
 
-RUN apt-get install -y firefox
+RUN apt-get install -y firefox=59.0.2+build1-0ubuntu1
 
 RUN cd clinical-trials-analysis
 
