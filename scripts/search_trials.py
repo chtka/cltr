@@ -16,7 +16,7 @@ from searchers.clinical_trials_searcher import ClinicalTrialsSearcher
 from searchers.anzctr_searcher import ANZCTRSearcher
 from searchers.isrctn_searcher import ISRCTNSearcher
 
-
+NO_UPLOAD
 
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     searchers = dict()
 
     # config
-    with open('config.json') as config_data_file:
+    with open('config/config.json') as config_data_file:
         data = json.load(config_data_file)
 
         search_terms_file_path = data['search_terms_file_path']
@@ -112,4 +112,3 @@ if __name__ == "__main__":
     log_file_path = "%d/%02d/%02d/search_trials_%s.log" % (d.year, d.month, d.day, gethostname())
 
     s3.Object(data['bucket_names']['raw_data_bucket_name'], log_file_path).put(Body=log_buffer.getvalue())
-
