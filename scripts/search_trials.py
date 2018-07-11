@@ -16,8 +16,6 @@ from searchers.clinical_trials_searcher import ClinicalTrialsSearcher
 from searchers.anzctr_searcher import ANZCTRSearcher
 from searchers.isrctn_searcher import ISRCTNSearcher
 
-NO_UPLOAD
-
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 
 def search_trials(terms, site_name, Searcher, logger):
