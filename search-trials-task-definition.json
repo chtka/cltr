@@ -1,0 +1,25 @@
+{
+    "volumes": [
+        {
+            "name": "config",
+            "host": {
+                "sourcePath": "/ecs/config"
+            }
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "searchTrials",
+            "image": "274059113391.dkr.ecr.us-west-1.amazonaws.com/benl/clinical-trials-analysis",
+            "mountPoints": [
+                {
+                    "sourceVolume": "config",
+                    "containerPath": "/clinical-trials-analysis/config"
+                }
+            ],
+            "memory": 500,
+            "command": ["/bin/sh", "-c", "cd clinical-trials-analysis && python3 scripts/search_trials.py 1> log.out 2> log.err"]
+        }
+    ],
+    "family": "searchTrials"
+}
