@@ -18,43 +18,7 @@ from searchers.isrctn_searcher import ISRCTNSearcher
 
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 
-def search_trials(terms, site_name, Searcher, logger):
-    """
-    Uses the specified Searcher to query the given site using the list of
-    query terms. Downloads the raw data and uploads it to S3.
-
-    Args:
-        terms: The list of terms to search for.
-        site_name: The website/database being searched.
-        Searcher: The type of searcher to use for searching.
-
-    Returns:
-        None.
-    """
-    with Searcher() as searcher:
-        for term in terms:
-
-            # download the raw data
-            filepath = searcher.search_and_download_raw(term)
-            if filepath:
-                
-                print(hostname, "[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
-                logger.info("%s [%s] DOWNLOAD %s" % (hostname, datetime.datetime.utcnow(), filepath))
-                
-                # upload file and remove local copy
-                filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, site_name, term, filepath)
-                bucket.upload_file(os.path.join(os.getcwd(), filepath), filepath_s3)
-                os.remove(os.path.join(os.getcwd(), filepath))
-                
-                print(hostname, "[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
-                logger.info("%s [%s] UPLOAD %s\n" % (hostname, datetime.datetime.utcnow(), filepath_s3))
-            
-            else:
-
-                print(hostname, "[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", site_name, "+", term)
-                logger.warning("%s [%s] FAILED_SEARCH: %s + %s" % (hostname, datetime.datetime.utcnow(), site_name, term))
-
-if __name__ == "__main__":
+def run_search_trials(config_path, no_upload=False):
 
     hostname = gethostname()
 
@@ -71,7 +35,7 @@ if __name__ == "__main__":
     searchers = dict()
 
     # config
-    with open('config/config.json') as config_data_file:
+    with open(config_path) as config_data_file:
         data = json.load(config_data_file)
 
         search_terms_file_path = data['search_terms_file_path']
@@ -101,12 +65,43 @@ if __name__ == "__main__":
             terms.append(term.rstrip())
 
     for searcher_name in searchers:
-        search_trials(terms, searcher_name, searchers[searcher_name], logger)
 
-    
+        with searchers[searcher_name]() as searcher:
+            
+            for term in terms:
+
+                filepath = searcher.search_and_download_raw(term)
+                if filepath:
+                    print(hostname, "[%s]" % datetime.datetime.utcnow(), "DOWNLOAD", filepath)
+                    logger.info("%s [%s] DOWNLOAD %s" % (hostname, datetime.datetime.utcnow(), filepath))
+
+
+                    if not no_upload:
+                        
+                        filepath_s3 = RAW_DATA_FORMAT_STRING % (d.year, d.month, d.day, searcher_name, term, filepath)
+
+                        bucket.upload_file(os.path.join(os.getcwd(), filepath), filepath_s3)
+
+                        print(hostname, "[%s]" % datetime.datetime.utcnow(), "UPLOAD", filepath_s3)
+                        logger.info("%s [%s] UPLOAD %s\n" % (hostname, datetime.datetime.utcnow(), filepath_s3))
+
+                    os.remove(os.path.join(os.getcwd(), filepath))
+
+                
+                else:
+
+                    print(hostname, "[%s]" % datetime.datetime.utcnow(),  "FAILED_SEARCH", searcher_name, "+", term)
+                    logger.warning("%s [%s] FAILED_SEARCH: %s + %s" % (hostname, datetime.datetime.utcnow(), searcher_name, term))
+
     print(hostname, "[%s]" % datetime.datetime.utcnow(), "STOP", __file__)
     logger.info("%s [%s] STOP %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
-    log_file_path = "%d/%02d/%02d/search_trials_%s.log" % (d.year, d.month, d.day, gethostname())
+    if not no_upload:
 
-    s3.Object(data['bucket_names']['raw_data_bucket_name'], log_file_path).put(Body=log_buffer.getvalue())
+        log_file_path = "%d/%02d/%02d/search_trials_%s.log" % (d.year, d.month, d.day, gethostname())
+
+        s3.Object(data['bucket_names']['raw_data_bucket_name'], log_file_path).put(Body=log_buffer.getvalue())
+
+
+if __name__ == "__main__":
+    run_search_trials('config/config.json')
