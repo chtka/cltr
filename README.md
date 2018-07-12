@@ -2,4 +2,32 @@
 
 [![Build Status](https://travis-ci.com/chtka/cltr.svg?branch=master)](https://travis-ci.com/chtka/cltr)
 
-Web scraper for ClinicalTrials.gov and other websites. Uploads data to Amazon S3.
+**cltr** is a Python module for building a very primitive data lake architecture, 
+using clinical trials registries, such as ClinicalTrials.gov, as the data
+sources.
+
+The basic workflow of cltr is as follows:
+1. Download raw clinical trials data from each of the clinical trials registry websites using the _searchers_ module.
+2. Upload the raw data to a specified S3 bucket for persistence. 
+3. Process the raw data using the _processors_ module, and upload the resultant data to a separate S3 bucket of persistence.
+4. (Optional) Augment the processed data with additional metadata, if desired, and upload the resultant data to yet another S3 bucket for persistence.
+5. Load the processed data into a database of choice, such as Elasticsearch, for querying and analysis.
+
+## Usage
+Create a _config.json_ configuration file in the _config_ subdirectory of the root directory. An example _config.json_ file is as follows:
+
+```javascript
+{
+    "bucket_names": {
+        "raw_data_bucket_name": "Ct-analysis-data-raw",
+        "processed_data_bucket_name": "ct-analysis-data-postprocessing"
+    },
+    "search_terms_file_path": "examples/search_terms_short.txt",
+    "searchers": ["clinical-trials-gov"]
+}
+```
+
+Then, navigate to the root directory of the project and run the desired script. For example:
+```
+python scripts/search_trials.py
+```
