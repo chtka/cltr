@@ -19,9 +19,9 @@ script:
 addons:
   firefox: latest
 after_script:
-  - docker push chtka/clinical-trials-analysis:latest
+  - docker push "$DOCKER_USERNAME"/clinical-trials-analysis:latest
   - pip install awscli
   - eval $(aws ecr get-login --no-include-email)
-  - docker tag chtka/clinical-trials-analysis:latest ${AWS_ID}.dkr.ecr.us-west-1.amazonaws.com/benl/clinical-trials-analysis
-  - docker push ${AWS_ID}.dkr.ecr.us-west-1.amazonaws.com/benl/clinical-trials-analysis
-  - aws s3 cp `pwd`/cfn_template.yml s3://${CT_ANALYSIS_DEPLOY_BUCKET_NAME}/cfn/cfn_template.yml
+  - docker tag "$DOCKER_USERNAME"/clinical-trials-analysis:latest "$AWS_ID".dkr.ecr.us-west-1.amazonaws.com/"$ECS_REPO_NAME"/clinical-trials-analysis
+  - docker push "$AWS_ID".dkr.ecr.us-west-1.amazonaws.com/"$ECS_REPO_NAME"/clinical-trials-analysis
+  - aws s3 cp `pwd`/cfn_template.yml s3://"$CT_ANALYSIS_DEPLOY_BUCKET_NAME"/cfn/cfn_template.yml
