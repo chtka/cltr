@@ -20,7 +20,7 @@ addons:
   firefox: latest
 after_script:
   - docker push chtka/clinical-trials-analysis:latest
-  - pip install aws-cli
+  - pip install awscli
   - eval $(aws ecr get-login --no-include-email)
   - docker tag chtka/clinical-trials-analysis:latest ${AWS_ID}.dkr.ecr.us-west-1.amazonaws.com/benl/clinical-trials-analysis
   - docker push ${AWS_ID}.dkr.ecr.us-west-1.amazonaws.com/benl/clinical-trials-analysis
