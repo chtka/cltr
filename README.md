@@ -1,12 +1,11 @@
 # Automated Clinical Trials Analysis
+[![Build Status](https://travis-ci.com/chtka/cltr.svg?branch=master)](https://travis-ci.com/chtka/cltr) ![Build Status](https://s3-us-west-1.amazonaws.com/codefactory-us-west-1-prod-default-build-badges/passing.svg)
 
-[![Build Status](https://travis-ci.com/chtka/cltr.svg?branch=master)](https://travis-ci.com/chtka/cltr)
-
-**cltr** is a Python module for building a very primitive data lake architecture, 
+**cltr** is a Python module for building a primitive data lake architecture, 
 using clinical trials registries, such as ClinicalTrials.gov, as the data
 sources.
 
-The basic workflow of cltr is as follows:
+The basic workflow of **cltr** is as follows:
 1. Download raw clinical trials data from each of the clinical trials registry websites using the _searchers_ module.
 2. Upload the raw data to a specified S3 bucket for persistence. 
 3. Process the raw data using the _processors_ module, and upload the resultant data to a separate S3 bucket of persistence.
@@ -31,3 +30,25 @@ Then, navigate to the root directory of the project and run the desired script. 
 ```
 python scripts/search_trials.py
 ```
+
+The scripts upload to S3 buckets automatically, so make sure to download the AWS CLI and configure credentials before attempting to run the scripts;
+if you are running these scripts from an EC2 instance, assigning a role that allows full access to S3 will also suffice.
+
+## Configuration
+The _config.json_ file has the following format:
+```javascript
+{
+    "bucket_names": {
+        "raw_data_bucket_name": "",
+        "processed_data_bucket_name": ""
+    },
+    "search_terms_file_path": "",
+    "searchers": [""]
+}
+```
+Each parameter of the _config.json_ object is described below:
+* ```bucket_names```:
+  *  ```raw_data_bucket_name```: The S3 bucket to which unmodified data will be upload from each of the various clinical trials registries.
+  *  ```processed_data_bucket_name```: The S3 bucket to which processed and parsed data will be uploaded.
+* ```search_terms_file_path```: Can be either an absolute path or a relative path, relative to the root directory of the project.
+* ```searchers```: A list of any combination of the following values, depending on which sites you wish to search: ```clinical-trials-gov```, ```anzctr```, ```isrctn```
