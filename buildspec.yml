@@ -1,12 +1,7 @@
 version: 0.2
-
 phases:
   install:
     commands:
-      - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email)
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG . 
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - apt-get update
       - apt-get upgrade -y
       - apt-get install -y firefox
@@ -18,10 +13,17 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - echo Running tests...
+      - echo Running tests locally...
       - pytest
+      - echo Building Docker image...
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG . 
+      - echo Running tests in Docker container...
+      - docker run $IMAGE_REPO_NAME:$IMAGE_TAG bash -c "cd clinical-trials-analysis; pytest"
   post_build:
     commands:
       - echo Build completed on `date`
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email)
       - echo Pushing the Docker image...
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazon
