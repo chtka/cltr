@@ -1,6 +1,10 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   install:
     commands:
       - apt-get update
@@ -11,8 +15,15 @@ phases:
       - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
       - export PATH=$PATH:$PWD/geckodriver
       - pip install -r requirements.txt
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
   build:
     commands:
       - echo Build started on `date`
       - echo Running tests...
       - pytest
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazon
