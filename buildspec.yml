@@ -13,12 +13,12 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - echo Running tests locally...
-      - pytest
       - echo Building Docker image...
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG . 
       - echo Running tests in Docker container...
       - docker run $IMAGE_REPO_NAME:$IMAGE_TAG bash -c "cd clinical-trials-analysis; pytest"
+      - echo Running tests locally...
+      - pytest
   post_build:
     commands:
       - echo Build completed on `date`
