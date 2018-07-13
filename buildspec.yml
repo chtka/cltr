@@ -15,8 +15,8 @@ phases:
       - tar -xzf geckodriver-v0.20.1-linux64.tar.gz -C geckodriver
       - export PATH=$PATH:$PWD/geckodriver
       - pip install -r requirements.txt
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME/$IMAGE_TAG
+      - docker build -t $IMAGE_REPO_NAME/$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME/$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME/$IMAGE_TAG
   build:
     commands:
       - echo Build started on `date`
