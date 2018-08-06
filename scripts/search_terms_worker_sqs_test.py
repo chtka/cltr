@@ -1,3 +1,3 @@
 import os
-print(os.environ['SQS_QUEUE_URL'])
-print(os.environ['RAW_DATA_S3_BUCKET'])
+print(os.environ.get('SQS_QUEUE_URL', None))
+print(os.environ.get('RAW_DATA_S3_BUCKET', None))
