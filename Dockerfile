@@ -2,7 +2,7 @@ FROM chtka/python-ubuntu
 
 RUN apt-get upgrade -y && apt-get update -y
 
-RUN apt-get install wget -y
+RUN apt-get install wget=1.19.4-1ubuntu2.1 -y
 
 RUN mkdir clinical-trials-analysis
 

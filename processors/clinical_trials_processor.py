@@ -39,7 +39,8 @@ class ClinicalTrialsProcessor(Processor):
         )
         
         # iterating through all files in the archive, we extract the wanted data
-        for filename in archive.namelist():
+        for filename in [name for name in archive.namelist() 
+            if name.endswith('.xml')]:
             
             # open and read file contents into string
             file = archive.open(filename)
@@ -63,6 +64,8 @@ class ClinicalTrialsProcessor(Processor):
             overall_official = root.find('overall_official')
             if overall_official:
                 principal_investigator = overall_official.find('last_name').text
+            else:
+                principal_investigator = None
             
             # number_of_sites
             number_of_sites = len(root.findall('location'))

@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/chtka/cltr.svg?branch=master)](https://travis-ci.com/chtka/cltr) ![Build Status](https://s3-us-west-1.amazonaws.com/codefactory-us-west-1-prod-default-build-badges/passing.svg)
 
 **cltr** is a Python module for building a primitive data lake architecture, 
-using clinical trials registries, such as ClinicalTrials.gov, as the data
+using clinical trials registries, such as [ClinicalTrials.gov](https://clinicaltrials.gov/), as the data
 sources.
 
 The basic workflow of **cltr** is as follows:
@@ -11,6 +11,8 @@ The basic workflow of **cltr** is as follows:
 3. Process the raw data using the _processors_ module, and upload the resultant data to a separate S3 bucket of persistence.
 4. (Optional) Augment the processed data with additional metadata, if desired, and upload the resultant data to yet another S3 bucket for persistence.
 5. Load the processed data into a database of choice, such as Elasticsearch, for querying and analysis.
+
+Currently, searching capabilities are supported for the following websites: [ClinicalTrials.gov](https://clinicaltrials.gov/), the [Australian New Zealand Clinical Trials Registry](http://www.anzctr.org.au/), and the [ISRCTN Registry](http://www.isrctn.com/).
 
 ## Usage
 Create a _config.json_ configuration file in the _config_ subdirectory of the root directory. An example _config.json_ file is as follows:

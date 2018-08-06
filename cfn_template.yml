@@ -2,9 +2,16 @@ Parameters:
   KeyPairName:
     Description: Provide an existing EC2 KeyPair to enable SSH access into the server.
     Type: AWS::EC2::KeyPair::KeyName
+  ConfigFileS3Path:
+    Description: Provide the S3 path to the configuration file to be used for the clinical trials analysis driver program.
+    Type: String
 Resources:
   EC2Instance:
       Type: AWS::EC2::Instance
+      CreationPolicy:
+        ResourceSignal:
+          Count: '1'
+          Timeout: PT15M
       Properties:
         InstanceType: t2.micro
         ImageId: ami-e0ba5c83
@@ -18,17 +25,29 @@ Resources:
           !Ref CLTRS3FullAccessInstanceProfile
         UserData:
           'Fn::Base64':
-            !Sub |
-              #!/bin/bash
-              sudo -i
-              echo hello > test.txt
-              echo ${AWS::StackName} > test2.txt
-              echo export CFN_STACK_NAME=${AWS::StackName} > /etc/profile
-              yum update -y
-              yum install docker -y
-              aws s3 cp s3://ct-analysis-deploy/config.json config.json
-              service docker start
-              docker run -v `pwd`/config.json:/clinical-trials-analysis/config.json chtka/clinical-trials-analysis:latest > /search_trials.log
+            !Sub
+              - |
+                #!/bin/bash -xe
+                sudo -i
+                /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+                systemctl start docker
+                aws s3 cp ${CONFIG_FILE_S3_PATH} config.json
+                docker run -v `pwd`/config.json:/clinical-trials-analysis/config.json chtka/clinical-trials-analysis:latest > /search_trials.log
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+              - CONFIG_FILE_S3_PATH: !Ref ConfigFileS3Path
+      Metadata:
+        AWS::CloudFormation::Init:
+          config:
+            packages:
+              yum:
+                docker: []
+            services:
+              docker:
+                enabled: "true"
+                ensureRunning: "true"
+                packages:
+                  yum:
+                    - "docker"
   CLTRSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:

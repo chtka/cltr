@@ -1,7 +1,7 @@
 import os
 from os import path
 import pandas as pd
-from time import sleep
+from time import sleep, time
 from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
 import zipfile

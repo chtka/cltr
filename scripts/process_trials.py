@@ -75,7 +75,7 @@ if __name__ == '__main__':
     logger.info("%s [%s] START %s" % (hostname, datetime.datetime.utcnow(), __file__))
 
     # config
-    with open('config.json') as config_data_file:
+    with open('config/config.json') as config_data_file:
         data = json.load(config_data_file)
 
     CLINICAL_TRIALS_RAW_DATA_BUCKET_NAME = data['bucket_names']['raw_data_bucket_name']

@@ -15,13 +15,14 @@ from searchers.clinical_trials_searcher import ClinicalTrialsSearcher
 
 hostname = gethostname()
 
-CLINICAL_TRIALS_SQS_QUEUE_URL = os.environ.get('CLINICAL_TRIALS_SQS_QUEUE_URL', 
-    'https://sqs.us-west-1.amazonaws.com/274059113391/AutomatedClinicalTrialsAnalysis')
+CLINICAL_TRIALS_SQS_QUEUE_URL = os.environ['SQS_QUEUE_URL']
+
+RAW_DATA_S3_BUCKET = os.environ['RAW_DATA_S3_BUCKET']
 
 sqs = boto3.client('sqs')
 s3 = boto3.resource('s3')
 
-bucket = s3.Bucket('ct-analysis-data-raw')
+bucket = s3.Bucket(RAW_DATA_S3_BUCKET)
 
 RAW_DATA_FORMAT_STRING = "%d/%02d/%02d/%s/%s/%s"
 

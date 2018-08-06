@@ -3,7 +3,7 @@
         {
             "name": "config",
             "host": {
-                "sourcePath": "/ecs/config"
+                "sourcePath": "/etc/acta/config"
             }
         }
     ],
