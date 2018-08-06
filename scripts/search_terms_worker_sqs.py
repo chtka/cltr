@@ -19,10 +19,14 @@ CLINICAL_TRIALS_SQS_QUEUE_URL = os.environ['SQS_QUEUE_URL']
 
 RAW_DATA_S3_BUCKET = os.environ['RAW_DATA_S3_BUCKET']
 
+AWS_REGION = os.environ['AWS_REGION']
+
 print(CLINICAL_TRIALS_SQS_QUEUE_URL, RAW_DATA_S3_BUCKET)
 
-sqs = boto3.client('sqs')
-s3 = boto3.resource('s3')
+print('Connecting to AWS resources...')
+
+sqs = boto3.client('sqs', region_name=AWS_REGION)
+s3 = boto3.resource('s3', region_name=AWS_REGION)
 
 bucket = s3.Bucket(RAW_DATA_S3_BUCKET)
 
