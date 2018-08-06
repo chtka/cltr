@@ -41,6 +41,8 @@ response = sqs.receive_message(
     WaitTimeSeconds=0
 )
 
+print(response)
+
 try:
 
     cltr_searcher = ClinicalTrialsSearcher()
