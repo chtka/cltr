@@ -15,6 +15,7 @@ import json
 import collections
 
 # parameters for RSS URL
+UPDATE_LOG_S3_BUCKET = os.environ.get('ACTA_UPDATE_LOG_S3_BUCKET', 'acta-update-logs')
 DAYS_AGO_UPDATED = os.environ.get('ACTA_DAYS_AGO_UPDATED', 30)
 REC_COUNT = os.environ.get('RECT_COUNT', 10000)
 
@@ -146,4 +147,4 @@ import boto3
 s3 = boto3.client('s3')
 
 
-s3.put_object(Body=str.encode(json.dumps(log)), Bucket='acta-update-logs', Key=str(log['process_started']) + '.json')
+s3.put_object(Body=str.encode(json.dumps(log)), Bucket=UPDATE_LOG_S3_BUCKET, Key=str(log['process_started']) + '.json')
