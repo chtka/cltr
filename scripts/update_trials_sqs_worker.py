@@ -11,16 +11,20 @@ import requests
 import time
 import jsondiff
 import json
+import boto3
 
 import collections
 
 AWS_REGION = os.environ.get('AWS_REGION', 'us-west-1')
-UPDATE_TRIALS_SQS_QUEUE_URL = os.environ.get('ACTA_UPDATE_TRIALS_SQS_QUEUE_URL')
+UPDATE_TRIALS_SQS_QUEUE_URL = os.environ.get('ACTA_UPDATE_TRIALS_SQS_QUEUE_URL', 'https://sqs.us-west-1.amazonaws.com/274059113391/SQS-Test')
+AWS_ELASTICSEARCH_ENDPOINT = os.environ.get('ACTA_AWS_ELASTICSEARCH_ENDPOINT', 'http://localhost:9200')
+
+AWS_ELASTICSEARCH_ENDPOINT = 'https://search-acta-lqudfuj44ynzcdjrsjektaz4lq.us-west-1.es.amazonaws.com'
 
 # parameters for RSS URL
 UPDATE_LOG_S3_BUCKET = os.environ.get('ACTA_UPDATE_LOG_S3_BUCKET', 'acta-update-logs')
 DAYS_AGO_UPDATED = os.environ.get('ACTA_DAYS_AGO_UPDATED', 30)
-REC_COUNT = os.environ.get('REC_COUNT', 10000)
+REC_COUNT = os.environ.get('ACTA_REC_COUNT', 10000)
 
 # Base URLs for downloading clinical trial data
 RSS_BASE_URL = 'https://clinicaltrials.gov/ct2/results/rss.xml?'
@@ -48,8 +52,30 @@ log = {
   'process_started': int(time.time()) 
 }
 
+sqs = boto3.client('sqs', region_name=AWS_REGION)
 
-for term in terms:
+print('Checking for terms...')
+
+response = sqs.receive_message(
+    QueueUrl=UPDATE_TRIALS_SQS_QUEUE_URL,
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=1,
+    MessageAttributeNames=[
+        'All'
+    ],
+    VisibilityTimeout=1800,
+    WaitTimeSeconds=0
+)
+
+while response.get('Messages', None):
+
+  message = response['Messages'][0]
+  term = message['MessageAttributes']['search-term']['StringValue']
+
+  print('checking for updates for studies matching term: %s' % term)
+
   with urlopen(RSS_BASE_URL + urlencode({
     'lup_d': DAYS_AGO_UPDATED,
     'term': term,
@@ -64,7 +90,7 @@ for term in terms:
 
   for nct_id in ids:
     print('Checking if %s is a new trial...' % nct_id)
-    resp = requests.get('http://localhost:9200/studies/_search', json={
+    resp = requests.get(AWS_ELASTICSEARCH_ENDPOINT + '/studies/_search', json={
         'query': {
             'match': {
                 'id_info.nct_id': nct_id
@@ -86,7 +112,7 @@ for term in terms:
         trial_dict.pop('required_header')    
         trial_dict['timestamp'] = int(time.time())
 
-        requests.put('http://localhost:9200/studies/_doc/%s' % nct_id, json=trial_dict)
+        requests.put(AWS_ELASTICSEARCH_ENDPOINT + '/studies/_doc/%s' % nct_id, json=trial_dict)
 
         log['created'][nct_id] = {
           'source': trial_dict
@@ -133,11 +159,26 @@ for term in terms:
           }
       study2['timestamp'] = int(time.time())
 
-      requests.put('http://localhost:9200/studies/_doc/%s' % nct_id, json=study2)
+      requests.put(AWS_ELASTICSEARCH_ENDPOINT + '/studies/_doc/%s' % nct_id, json=study2)
 
-import boto3
+  sqs.delete_message(
+    QueueUrl=UPDATE_TRIALS_SQS_QUEUE_URL,
+    ReceiptHandle=message['ReceiptHandle']
+  )
 
-s3 = boto3.client('s3')
+  response = sqs.receive_message(
+      QueueUrl=UPDATE_TRIALS_SQS_QUEUE_URL,
+      AttributeNames=[
+          'SentTimestamp'
+      ],
+      MaxNumberOfMessages=1,
+      MessageAttributeNames=[
+          'All'
+      ],
+      VisibilityTimeout=1800,
+      WaitTimeSeconds=0
+  )
+s3 = boto3.client('s3', region_name=AWS_REGION)
 
 
 s3.put_object(Body=str.encode(json.dumps(log)), Bucket=UPDATE_LOG_S3_BUCKET, Key=str(log['process_started']) + '.json')
