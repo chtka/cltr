@@ -14,10 +14,13 @@ import json
 
 import collections
 
+AWS_REGION = os.environ.get('AWS_REGION', 'us-west-1')
+UPDATE_TRIALS_SQS_QUEUE_URL = os.environ.get('ACTA_UPDATE_TRIALS_SQS_QUEUE_URL')
+
 # parameters for RSS URL
 UPDATE_LOG_S3_BUCKET = os.environ.get('ACTA_UPDATE_LOG_S3_BUCKET', 'acta-update-logs')
 DAYS_AGO_UPDATED = os.environ.get('ACTA_DAYS_AGO_UPDATED', 30)
-REC_COUNT = os.environ.get('RECT_COUNT', 10000)
+REC_COUNT = os.environ.get('REC_COUNT', 10000)
 
 # Base URLs for downloading clinical trial data
 RSS_BASE_URL = 'https://clinicaltrials.gov/ct2/results/rss.xml?'
@@ -44,6 +47,22 @@ log = {
   'updated': dict(),
   'process_started': int(time.time()) 
 }
+
+import boto3
+sqs = boto3.client('sqs', region_name=AWS_REGION)
+
+response = sqs.receive_message(
+  QueueURL=UPDATE_TRIALS_SQS_QUEUE_URL,
+  AttributeNames=[
+    'SentTimestamp'
+  ],
+  MaxNumberOfMessages=1,
+  MessageAttributeNames=[
+    'All'
+  ],
+  VisibilityTimeout=1800,
+  WaitTimeSeconds=0
+)
 
 terms = [
   'resmed'
@@ -110,14 +129,7 @@ for term in terms:
     if study == study2:
       print('No differences found in %s.' % nct_id)
     else:
-
-
-
-
       diff = jsondiff.diff(flatten(study), flatten(study2), syntax='symmetric')
-
-
-
       log['updated'][nct_id] = dict()
 
       for k, v in diff.items():
