@@ -40,10 +40,11 @@ response = sqs.receive_message(
 )
 
 while response.get('Messages', None):
-    print('received')
+
     message = response['Messages'][0]
     term = message['MessageAttributes']['search-term']['StringValue']
-    
+    print('START TRIAL UPDATES - %s' % term)
+
     with urlopen(RSS_BASE_URL + urlencode({
         'lup_d': 30,
         'term': term,
@@ -54,7 +55,7 @@ while response.get('Messages', None):
         rss_dict = xmltodict.parse(etree.tostring(root))
         ids = [item['guid'] for item in rss_dict['rss']['channel'].get('item', [])]
         for nct_id in ids:
-            print('Re-uploading', nct_id)
+            print('UPLOAD %s.xml', nct_id)
             with urlopen(TRIAL_XML_BASE_URL % nct_id) as trial_xml_resp:
                 s3.put_object(Body=trial_xml_resp.read(), Bucket=RAW_XML_S3_BUCKET, Key=nct_id + '.xml')
 
@@ -64,7 +65,7 @@ while response.get('Messages', None):
         ReceiptHandle=message['ReceiptHandle']
     )
 
-    print('finished with', term)
+    print('END TRIAL UPDATES - %s' % term)
     response = sqs.receive_message(
         QueueUrl=UPDATE_TRIALS_SQS_QUEUE_URL,
         AttributeNames=[
@@ -77,3 +78,4 @@ while response.get('Messages', None):
         VisibilityTimeout=1800,
         WaitTimeSeconds=0    
     )
+
