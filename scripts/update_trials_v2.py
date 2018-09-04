@@ -57,7 +57,9 @@ while response.get('Messages', None):
         for nct_id in ids:
             print('UPLOAD %s.xml', nct_id)
             with urlopen(TRIAL_XML_BASE_URL % nct_id) as trial_xml_resp:
-                s3.put_object(Body=trial_xml_resp.read(), Bucket=RAW_XML_S3_BUCKET, Key=nct_id + '.xml')
+                root = etree.fromstring(trial_xml_resp.read())
+                clear_xml_attribs(root)
+                s3.put_object(Body=etree.tostring(root), Bucket=RAW_XML_S3_BUCKET, Key=nct_id + '.xml')
 
     
     sqs.delete_message(
