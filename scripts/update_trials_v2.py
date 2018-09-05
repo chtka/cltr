@@ -15,6 +15,7 @@ TRIAL_XML_BASE_URL = 'https://clinicaltrials.gov/ct2/show/%s?displayxml=true'
 
 # AWS resources config
 RAW_XML_S3_BUCKET = os.environ['ACTA_RAW_XML_S3_BUCKET']
+XML_DATA_PREFIX = os.environ.get('ACTA_XML_DATA_PREFIX', '')
 UPDATE_TRIALS_SQS_QUEUE_URL = os.environ['ACTA_UPDATE_TRIALS_SQS_QUEUE_URL']
 
 def clear_xml_attribs(root):
@@ -59,7 +60,7 @@ while response.get('Messages', None):
             with urlopen(TRIAL_XML_BASE_URL % nct_id) as trial_xml_resp:
                 root = etree.fromstring(trial_xml_resp.read())
                 clear_xml_attribs(root)
-                s3.put_object(Body=etree.tostring(root), Bucket=RAW_XML_S3_BUCKET, Key=nct_id + '.xml')
+                s3.put_object(Body=etree.tostring(root), Bucket=RAW_XML_S3_BUCKET, Key=XML_DATA_PREFIX + nct_id + '.xml')
 
     
     sqs.delete_message(
