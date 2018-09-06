@@ -3,6 +3,7 @@ import os
 import xmltodict
 
 from lxml import etree
+from os import path
 from urllib.request import urlretrieve, urlopen
 from urllib.parse import urlencode
 
@@ -60,7 +61,7 @@ while response.get('Messages', None):
             with urlopen(TRIAL_XML_BASE_URL % nct_id) as trial_xml_resp:
                 root = etree.fromstring(trial_xml_resp.read())
                 clear_xml_attribs(root)
-                s3.put_object(Body=etree.tostring(root), Bucket=RAW_XML_S3_BUCKET, Key=XML_DATA_PREFIX + nct_id + '.xml')
+                s3.put_object(Body=etree.tostring(root), Bucket=RAW_XML_S3_BUCKET, Key=path.join(XML_DATA_PREFIX, '%s.xml' % nct_id))
 
     
     sqs.delete_message(
