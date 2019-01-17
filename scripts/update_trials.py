@@ -48,6 +48,10 @@ log = {
   'process_started': int(time.time()) 
 }
 
+terms = [
+  'resmed'
+]
+
 
 for term in terms:
   with urlopen(RSS_BASE_URL + urlencode({
@@ -74,7 +78,7 @@ for term in terms:
 
     resp_json = resp.json()
 
-    if resp_json['hits']['total'] == 0:
+    if resp_json.get('hits', None) and resp_json['hits']['total'] == 0:
 
       print('Inserting study %s...' % nct_id)
 
